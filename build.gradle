@@ -1,0 +1,61 @@
+group = 'data_agg'
+buildDir = "/mnt/ramdisk/build/$group"
+
+apply plugin: 'scala'
+apply plugin: 'idea'
+
+idea {
+    module {
+        inheritOutputDirs = true
+        downloadJavadoc = false
+        downloadSources = false
+    }
+}
+
+def scalaVersion = '2.12.10'
+def scalaRelease = scalaVersion.split('\\.').take(2).join('.')
+
+def deploy = "desm"
+
+
+repositories {
+    mavenCentral()
+}
+
+if (deploy == "prod") {
+    dependencies {
+        compileOnly "org.scala-lang:scala-library:$scalaVersion"
+        compileOnly group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.10.0'
+        compileOnly group: 'com.fasterxml.jackson.module', name: "jackson-module-scala_$scalaRelease", version: '2.10.0'
+        compileOnly group: 'org.apache.hbase', name: 'hbase-client', version: '1.2.6'
+        compileOnly group: 'org.apache.kafka', name: 'kafka-clients', version: '0.9.0.1'
+    }
+}else {
+    dependencies {
+        compile "org.scala-lang:scala-library:$scalaVersion"
+        implementation "io.vertx:vertx-lang-scala_2.12:3.8.0"
+        implementation "org.apache.hbase:hbase-client:1.2.6"
+    }
+}
+
+task run(type: JavaExec, dependsOn: classes) {
+    main = 'main.Manual'
+    classpath sourceSets.main.runtimeClasspath
+    classpath configurations.runtime
+
+}
+
+task uberjar(type: Jar) {
+    baseName = project.name.toLowerCase()
+    manifest {
+        attributes	'Implementation-Title': 'Repositorio das ultimas transações',
+//					'Implementation-Version': version,
+                'Built-Date': new Date().format('yyyy-MM-dd HH:mm:ss'),
+                'Java-JDK': System.getProperty('java.version'),
+                'Java-Vendor': System.getProperty('java.vm.vendor'),
+                'Scala-SDK': scalaVersion,
+                'UUID': java.util.UUID.randomUUID().toString().toUpperCase()
+    }
+    from(configurations.runtime.collect { it.isDirectory() ? it : zipTree(it) }){
+    } with jar
+}
