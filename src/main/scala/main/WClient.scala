@@ -31,7 +31,7 @@ class WClient(client: HttpClient) extends ScalaVerticle {
           message.reply(message.body().toString)
         }).setTimeout(10000).end()
       } else {
-        client.request(HttpMethod.GET, RequestOptions.apply.setHost("dxl1big00021.dispositivos.bb.com.br").setPort(20550).setURI("/teste/1"), (response: HttpClientResponse) => {
+        client.request(HttpMethod.GET, RequestOptions.apply.setHost("172.16.165.141").setPort(20550).setURI("/teste/1"), (response: HttpClientResponse) => {
           //        println(s"Received response with status code ${response.statusCode()}; ${response.handler(buffer => print(s"Received a part of the response body: $buffer"))}")
           message.reply(message.body().toString)
         }).putHeader("Accept", "application/protobuf").putHeader("Accept-Encoding", "gzip").end()
